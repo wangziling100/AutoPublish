@@ -1,10 +1,15 @@
 const core = require('@actions/core');
+const { Github, context } = require('@actions/github')
 const wait = require('./wait');
 
 
 // most @actions toolkit packages have async methods
 async function run() {
   try {
+    const githubClient = new GitHub(process.env.GITHUB_TOKEN);
+    const { owner, repo } = context.repo;
+    console.log(context)
+    const commitRef = context.ref;
     const ms = core.getInput('milliseconds');
     core.info(`Waiting ${ms} milliseconds ...`);
 
