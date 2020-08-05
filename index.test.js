@@ -19,5 +19,6 @@ test('wait 500 ms', async () => {
 test('test runs', () => {
   process.env['INPUT_MILLISECONDS'] = 500;
   const ip = path.join(__dirname, 'index.js');
+  //console.log(ip, process.env)
   console.log(cp.execSync(`node ${ip}`, {env: process.env}).toString());
 })
