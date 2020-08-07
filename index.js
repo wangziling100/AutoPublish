@@ -15,91 +15,29 @@ async function run() {
     commit = buffer2String(commit);
     let branch = cp.execSync(`git branch | sed -n '/\* /s///p'`)
     branch = buffer2String(branch)
+    branch = branch.replace(/\n/g, '')
 
 
     console.log(commit, 'commit');
-    console.log(branch, 'branch')
+    console.log(branch, 'branch');
 
-    let tag = null
-    let increace = ''
-    let succeed = false
-    const table = {}
-    table['key'] = [
-      // branch, commit
-      ['master', 'init'],
-      ['master', 'breaking change'],
-      ['master', 'feat'],
-      ['master', 'fix'],
-      ['master', 'merge N'],
-      ['master', 'merge N.N'],
-      ['master', 'merge next'],
-      ['master', 'merge alpha'],
-      ['master', 'merge beta'],
-      ['next', 'init'],
-      ['next', 'feat'],
-      ['next', 'fix'],
-      ['next', 'merge N'],
-      ['next', 'merge N.N'],
-      ['next', 'merge alpha'],
-      ['next', 'merge beta'],
-      ['N', 'feat'],
-      ['N', 'fix'],
-      ['N', 'merge N.N'],
-      ['N', 'merge alpha'],
-      ['N', 'merge beta'],
-      ['N.N', 'fix'],
-      ['alpha', 'feat'],
-      ['alpha', 'fix'],
-      ['alpha', 'merge N'],
-      ['alpha', 'merge N.N'],
-      ['beta', 'feat'],
-      ['beta', 'fix'],
-      ['beta', 'merge N'],
-      ['beta', 'merge N.N']
-      ['N', 'init'],
-      ['N.N', 'init'],
-      ['alpha', 'init'],
-      ['beta', 'init']
-    ]
-    table['value'] = [
-      // version
-      ['major'],
-      ['major'],
-      ['minor'],
-      ['patch'],
-      ['minor'],
-      ['patch'],
-      ['major'],
-      ['major'],
-      ['major'],
-      ['major'],
-      ['minor'],
-      ['patch'],
-      ['minor'],
-      ['patch'],
-      ['minor'],
-      ['minor'],
-      ['minor'],
-      ['patch'],
-      ['minor'],
-      ['minor'],
-      ['patch'],
-      ['prerelease'],
-      ['prerelease'],
-      ['prerelease'],
-      ['prerelease'],
-      ['prerelease'],
-      ['prerelease'],
-      ['prerelease'],
-      ['prerelease'],
-      ['major'],
-      ['minor'],
-      ['prerelease'],
-      ['prerelease']
-    ]
-    switch (branch){
-      case 'master': tag='latest'
-    }
+    let tag = null;
+    let increace = '';
+    let succeed = false;
+    let cmd = null;
+    
+    const [commit_key, commit_workspace] = checkCommitAnalyser(commit, branch);
+    const branchInfo = getInfoFromBranch(branch);
+    console.log('branchInfo', branch, branchInfo, commit_workspace)
+    //if (branchInfo.workspace!==commit_workspace) process.exit(-1);
+    increace = checkDecisionTable([branchInfo.branch, commit_key], table);
+    tag = getTagFromBranch(branchInfo.branch);
+    cmd = getCMD( branchInfo.branch, 
+                  commit_workspace,
+                  increace,
+                  tag )
+    console.log(cmd, 'cmd')
+    
     const ms = core.getInput('milliseconds');
     core.info(`Waiting ${ms} milliseconds ...`);
 
@@ -113,6 +51,45 @@ async function run() {
   }
 }
 
+function getCMD(branch, workspace, increace, tag){
+  let preid = '';
+  let cmd = '';
+  if (branch===null || 
+      workspace===null || 
+      increace===null || 
+      tag===null){
+    return null
+  }
+
+  if (increace==='prerelease') {
+    preid = ' --preid ' + branch
+  }
+
+  if (workspace==='global'){
+    cmd = 'yarn publish --' 
+              + increace
+              + preid
+              + ' --tag '
+              + tag
+              + ' --access '
+              + 'public'
+              + ' --no-interactive'
+  }
+  else { 
+    cmd = 'yarn workspace '
+            + workspace 
+            + ' publish --'
+            + increace
+            + preid
+            + ' --tag '
+            + tag
+            + ' --access '
+            + 'public'
+            + ' --no-interactive'
+  }
+  return cmd
+}
+
 function buffer2String(buffer, key='data'){
   let ret = JSON.stringify(buffer);
   ret = JSON.parse(ret);
@@ -121,23 +98,137 @@ function buffer2String(buffer, key='data'){
 }
 
 function checkDecisionTable(condition, table){
-  const keys = table.keys;
+  const key = table.key;
   const result = table.value;
-  for (let index in keys){
-    const isEqual = compare(keys[index], condition);
-    if (isEqual) return result[index];
+  for (let index in key){
+    //console.log(condition, key[index], 'compare in check decision table')
+    const isEqual = compare(key[index], condition);
+    if (isEqual) {
+      return result[index];
+    }
   }
   return null;
 }
 
 function compare(a, b){
+  //console.log(a, b, 'compare')
   if (a.length!==b.length) return false;
   for (let index in a){
     if(a[index]!==b[index]) return false;
   }
   return true;
 }
-
+const table = {}
+table['key'] = [
+  // branch, commit
+  ['master', 'init'],             //1
+  ['master', 'breaking change'],  //2
+  ['master', 'feat'],             //3
+  ['master', 'fix'],              //4
+  ['master', 'merge N'],          //5
+  ['master', 'merge N.N'],        //6
+  ['master', 'merge next'],       //7
+  ['master', 'merge alpha'],      //8
+  ['master', 'merge beta'],       //9
+  ['next', 'init'],               //10
+  ['next', 'feat'],               //11
+  ['next', 'fix'],                //12
+  ['next', 'merge N'],            //13
+  ['next', 'merge N.N'],          //14
+  ['next', 'merge alpha'],        //15
+  ['next', 'merge beta'],         //16
+  ['N', 'feat'],                  //17
+  ['N', 'fix'],                   //18
+  ['N', 'merge N.N'],             //19
+  ['N', 'merge alpha'],           //20
+  ['N', 'merge beta'],            //21
+  ['N.N', 'fix'],                 //22
+  ['alpha', 'feat'],              //23
+  ['alpha', 'fix'],               //24
+  ['alpha', 'merge N'],           //25
+  ['alpha', 'merge N.N'],         //26
+  ['beta', 'feat'],               //27
+  ['beta', 'fix'],                //28
+  ['beta', 'merge N'],            //29
+  ['beta', 'merge N.N'],          //30
+  ['N', 'init'],                  //31
+  ['N.N', 'init'],                //32
+  ['alpha', 'init'],              //33
+  ['beta', 'init']                //34
+]
+table['value1'] = [
+  'major',        //1
+  'major',        //2
+  'minor',        //3
+  'patch',        //4
+  'minor',        //5
+  'patch',        //6
+  'major',        //7
+  'major',        //8
+  'major',        //9
+  'major',        //10
+  'minor',        //11
+  'patch',        //12
+  'minor',        //13
+  'patch',        //14
+  'minor',        //15 
+  'minor',        //16
+  'minor',        //17
+  'patch',        //18
+  'patch',        //19
+  'minor',        //20
+  'minor',        //21
+  'patch',        //22
+  'prerelease',   //23
+  'prerelease',   //24
+  'prerelease',   //25
+  'prerelease',   //26
+  'prerelease',   //27
+  'prerelease',   //28
+  'prerelease',   //29
+  'prerelease',   //30
+  'minor',        //31
+  'patch',        //32
+  'minor',        //33
+  'minor',        //34
+]
+table['value'] = [
+  // version
+  'major',        //1
+  'major',        //2
+  'minor',        //3
+  'patch',        //4
+  'minor',        //5
+  'patch',        //6
+  'major',        //7
+  'major',        //8
+  'major',        //9
+  'major',        //10
+  'minor',        //11
+  'patch',        //12
+  'minor',        //13
+  'patch',        //14
+  'minor',        //15
+  'minor',        //16
+  'minor',        //17
+  'patch',        //18
+  'patch',        //19
+  'minor',        //20
+  'minor',        //21
+  'patch',        //22*
+  'prerelease',   //23
+  'prerelease',   //24
+  'prerelease',   //25
+  'prerelease',   //26
+  'prerelease',   //27
+  'prerelease',   //28
+  'prerelease',   //29
+  'prerelease',   //30
+  'minor',        //31
+  'patch',        //32
+  'minor',        //33
+  'minor'         //34
+]
 function checkCommitAnalyser(commit, branch){
   //console.log(commit, '---------------')
   let workspace = null;
@@ -255,6 +346,7 @@ function findMergeBranch(branches, localBranch, workspace){
 }
 
 function extractVersion(version){
+  //console.log(version)
   const parts = version.split('.')
   try{
     if (parts[1]==='x') return 'N';
@@ -264,7 +356,34 @@ function extractVersion(version){
     console.log(err);
   }
   return version;
-  
+}
+
+function getInfoFromBranch(branch){
+  const parts = branch.split('@@')  
+  const re = /([0-9])+(.(([0-9])+|x))?.x/;
+  if (parts.length===1) {
+    const tmp = re.exec(branch)
+    if (tmp!==null) branch = tmp[0]
+    branch = extractVersion(branch)
+    return { workspace: 'global', branch: branch}
+  }
+  if (parts.length===2) {
+    const tmp = re.exec(parts[1])
+    if (tmp!==null) branch = tmp[0]
+    else branch = parts[1]
+    branch = extractVersion(branch)
+    return { workspace: parts[0], branch: branch}
+  }
+  return null
+}
+
+function getTagFromBranch(branch){
+  switch(branch){
+    case 'master': return 'latest';
+    case 'N': return 'dev';
+    case 'N.N': return 'dev';
+    default: return branch;
+  }
 }
 
 run();
@@ -273,4 +392,9 @@ module.exports = {
   multiMatch: multiMatch,
   extractVersion: extractVersion,
   checkCommitAnalyser: checkCommitAnalyser,
+  checkDecisionTable: checkDecisionTable,
+  table: table,
+  getInfoFromBranch: getInfoFromBranch,
+  getTagFromBranch: getTagFromBranch,
+  getCMD: getCMD,
 }

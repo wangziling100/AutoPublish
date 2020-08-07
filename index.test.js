@@ -5,6 +5,11 @@ const path = require('path');
 const { multiMatch, 
         extractVersion,
         checkCommitAnalyser,
+        checkDecisionTable,
+        table,
+        getInfoFromBranch,
+        getTagFromBranch,
+        getCMD,
         } = require('./index');
 
 test('throws invalid number', async () => {
@@ -32,7 +37,7 @@ test('test multiMatch', () => {
   const commit2 = 'merge 1.2.x to 1.x'
   const commit3 = 'merge v1.2.x to v1.x'
   const re = /([0-9])+(.(([0-9])+|x))?.x/
-  console.log(typeof(multiMatch))
+  //console.log(typeof(multiMatch))
   multiMatch(re, commit1)
   expect(multiMatch(re, commit1)).toEqual(['1.2.x'])
   expect(multiMatch(re, commit2)).toEqual(['1.2.x', '1.x'])
@@ -118,4 +123,128 @@ test('test checkCommitAnalyser', ()=>{
   .toEqual(['merge beta', 'abc'])
   expect(checkCommitAnalyser(commit19, 'abc@@beta'))
   .toEqual([null, 'abc'])
+})
+
+test('test checkDecisionTable', () => {
+  const branch1 = 'master'
+  const branch2 = 'next'
+  const branch3 = 'alpha'
+  const branch4 = 'beta'
+  const branch5 = 'v1.0.x'
+  const branch6 = 'v1.x'
+  const branch7 = 'abc@@master'
+  const branch8 = 'abc@@next'
+  const branch9 = 'abc@@alpha'
+  const branch10 = 'abc@@beta'
+  const branch11 = 'abc@@v1.0.x'
+  const branch12 = 'abc@@v1.x'
+
+  const commit1 = 'feat'
+  const commit2 = 'fix'
+  const commit3 = 'breaking change'
+  const commit4 = 'merge N'
+  const commit5 = 'merge N.N'
+  const commit6 = 'merge next'
+  const commit7 = 'merge alpha'
+  const commit8 = 'merge beta'
+  const branchInfo1 = getInfoFromBranch(branch2)
+  const branchInfo2 = getInfoFromBranch(branch8)
+  const branchInfo3 = getInfoFromBranch(branch11)
+  const branchInfo4 = getInfoFromBranch(branch12)
+  const branchInfo5 = getInfoFromBranch(branch9)
+  //console.log(getInfoFromBranch(branch1).branch, 'branch info');
+  const condition1 = [
+    getInfoFromBranch(branch1).branch, 'feat'
+  ]
+  const condition2 = [
+    getInfoFromBranch(branch7).branch, 'feat'
+  ]
+  const condition3 = [
+    getInfoFromBranch(branch11).branch, 'merge alpha'
+  ]
+  const condition4 = [
+    getInfoFromBranch(branch12).branch, 'merge alpha'
+  ]
+  const condition5 = [
+    getInfoFromBranch(branch9).branch, 'merge N.N'
+  ]
+  //let increase = checkDecisionTable(condition1, table)
+  expect(checkDecisionTable(condition1, table))
+  .toBe('minor')
+  expect(checkDecisionTable(condition2, table))
+  .toBe('minor')
+  expect(checkDecisionTable(condition3, table))
+  .toBe(null)
+  expect(checkDecisionTable(condition4, table))
+  .toBe('minor')
+  //console.log(condition5)
+  expect(checkDecisionTable(condition5, table))
+  .toBe('prerelease')
+
+  const condition6 = [
+    branchInfo1.branch,
+    'merge N.N'
+  ]
+  const condition7 = [
+    branchInfo2.branch,
+    'merge N.N'
+  ]
+
+  const condition8 = [
+    branchInfo3.branch,
+    'feat'
+  ]
+  
+  const condition9 = [
+    branchInfo4.branch,
+    'merge N.N'
+  ]
+  
+  const condition10 = [
+    branchInfo5.branch,
+    'fix'
+  ]
+  
+  const increase1 = checkDecisionTable(condition6, table)
+  const increase2 = checkDecisionTable(condition7, table)
+  const increase3 = checkDecisionTable(condition8, table)
+  const increase4 = checkDecisionTable(condition9, table)
+  const increase5 = checkDecisionTable(condition10, table)
+
+  const tag1 = getTagFromBranch(branchInfo1.branch)
+  const tag2 = getTagFromBranch(branchInfo2.branch)
+  const tag3 = getTagFromBranch(branchInfo3.branch)
+  const tag4 = getTagFromBranch(branchInfo4.branch)
+  const tag5 = getTagFromBranch(branchInfo5.branch)
+
+  const cmd1 = getCMD(branchInfo1.branch, 
+                      branchInfo1.workspace,
+                      increase1,
+                      tag1) 
+  const cmd2 = getCMD(branchInfo2.branch,
+                      branchInfo2.workspace,
+                      increase2,
+                      tag2)
+  const cmd3 = getCMD(branchInfo3.branch,
+                      branchInfo3.workspace,
+                      increase3,
+                      tag3)
+  const cmd4 = getCMD(branchInfo4.branch,
+                      branchInfo4.workspace,
+                      increase4,
+                      tag4)
+  const cmd5 = getCMD(branchInfo5.branch,
+                      branchInfo5.workspace,
+                      increase5,
+                      tag5)
+
+  expect(cmd1).toBe('yarn publish --patch --tag next --access public --no-interactive')
+  expect(cmd2).toBe('yarn workspace abc publish --patch --tag next --access public --no-interactive')
+  expect(cmd3).toBe(null)
+  expect(cmd4).toBe('yarn workspace abc publish --patch --tag dev --access public --no-interactive')
+  expect(cmd5).toBe('yarn workspace abc publish --prerelease --preid alpha --tag alpha --access public --no-interactive')
+})
+
+test('test decision table', () => {
+  expect(table.value).toEqual(table.value1)
 })
