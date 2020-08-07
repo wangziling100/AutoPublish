@@ -101,6 +101,7 @@ function runCMD(cmd, email, name){
                       + `" && git config --global user.name "`
                       + name
                       + `"`
+  console.log(gitConfCMD)
   cp.execSync(loginCMD)
   cp.execSync(gitConfCMD)
   if (cmd!==null) {
