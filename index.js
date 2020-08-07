@@ -95,7 +95,8 @@ function runCMD(cmd){
   const token = process.env.NPM_TOKEN
   const loginCMD = `npm config set '//registry.npmjs.org/:_authTo
 ken' "`+token+`"`
-  console.log(loginCMD)
+  cp.execSync(loginCMD)
+  if (cmd!==null) cp.execSync(cmd)
 }
 
 function buffer2String(buffer, key='data'){
