@@ -53,7 +53,8 @@ async function run() {
       runCMD(cmd, email, name, rootDir)
       const [tagMessage, version] = genGithubTag(commit_workspace, scope, rootDir)
       console.log(tagMessage, version, 'tag message and version')
-      const workspaceVersion = commit_workspace+'@v'+version
+      let workspaceVersion = commit_workspace+'@v'+version
+      if (branchInfo.branch!=='latest') workspaceVersion = workspaceVersion+'@'+branchInfo.branch
       pushGithubTag(tagMessage, version, workspaceVersion)
     }
     else {
