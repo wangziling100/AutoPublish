@@ -52,6 +52,7 @@ async function run() {
     if (cmd!==null) {
       runCMD(cmd, email, name, rootDir)
       const [tagMessage, version] = genGithubTag(commit_workspace, scope, rootDir)
+      console.log(tagMessage, version, 'tag message and version')
       pushGithubTag(tagMessage, version)
     }
     else {
@@ -155,10 +156,14 @@ function genGithubTag(workspace, scope, rootDir){
     catch{
       version = cp.execSync(cmd2)
     }
+    console.log(version, 'version0')
     version = buffer2String(version)
+    console.log(version, 'version1')
     version = JSON.parse(version).data
+    console.log(version, 'version2')
     const re = /([0-9])+.([0-9])+.([0-9])+(-(alpha|beta|rc).([0-9])+)?/;
     version = re.exec(version)
+    console.log(version, 'version3')
     if (version!==null) version = version[0]
   }
   if (workspace==='global') workspace=''
