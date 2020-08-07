@@ -2,7 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github')
 //const wait = require('./wait');
 const cp = require('child_process');
-const js = require('fs')
+const fs = require('fs')
 //const semver = require('semver')
 
 

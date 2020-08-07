@@ -222,23 +222,28 @@ test('test checkDecisionTable', () => {
   const cmd1 = getCMD(branchInfo1.branch, 
                       branchInfo1.workspace,
                       increase1,
-                      tag1) 
+                      tag1,
+                      '') 
   const cmd2 = getCMD(branchInfo2.branch,
                       branchInfo2.workspace,
                       increase2,
-                      tag2)
+                      tag2,
+                      '')
   const cmd3 = getCMD(branchInfo3.branch,
                       branchInfo3.workspace,
                       increase3,
-                      tag3)
+                      tag3,
+                      '')
   const cmd4 = getCMD(branchInfo4.branch,
                       branchInfo4.workspace,
                       increase4,
-                      tag4)
+                      tag4,
+                      '')
   const cmd5 = getCMD(branchInfo5.branch,
                       branchInfo5.workspace,
                       increase5,
-                      tag5)
+                      tag5,
+                      '')
 
   expect(cmd1).toBe('yarn publish --patch --tag next --access public --no-interactive')
   expect(cmd2).toBe('yarn workspace abc publish --patch --tag next --access public --no-interactive')

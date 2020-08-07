@@ -167,7 +167,7 @@ const core = __webpack_require__(470);
 const github = __webpack_require__(469)
 //const wait = require('./wait');
 const cp = __webpack_require__(129);
-const js = __webpack_require__(747)
+const fs = __webpack_require__(747)
 //const semver = require('semver')
 
 
