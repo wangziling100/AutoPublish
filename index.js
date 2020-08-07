@@ -20,8 +20,11 @@ async function run() {
     branch = branch.replace(/\n/g, '')
     let version = cp.execSync('yarn version --json')
     version = buffer2String(version)
+    version = JSON.parse(version).data
+    const re = /([0-9])+.([0-9])+.([0-9])+(-(alpha|beta|rc).([0-9])+)?/;
+    version = re.exec(version)
+    if (version!==null) version = version[0]
     console.log(version)
-
     //console.log(commit, 'commit');
     //console.log(branch, 'branch');
     //console.log(context, 'context')
@@ -52,7 +55,7 @@ async function run() {
     if (cmd!==null) runCMD(cmd, email, name)
     else {
       if (strictError) core.setFailed('publish failed')
-      else core.setInfo('publish failed')
+      else console.log('publish failed')
     }
     
   } catch (error) {
@@ -151,8 +154,11 @@ function genGithubTag(workspace, scope, rootDir){
     catch{
       version = cp.execSync(cmd2)
     }
-    //version = buffer2String(version)
-    //version = JSON.parse(version).data
+    version = buffer2String(version)
+    version = JSON.parse(version).data
+    const re = /([0-9])+.([0-9])+.([0-9])+(-(alpha|beta|rc).([0-9])+)?/;
+    version = re.exec(version)
+    if (version!==null) version = version[0]
   }
 }
 
