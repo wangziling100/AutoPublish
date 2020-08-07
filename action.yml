@@ -1,4 +1,4 @@
-name: 'Wait'
+name: 'auto-publish'
 description: 'Wait a designated number of milliseconds'
 runs:
   using: 'node12'
