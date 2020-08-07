@@ -1,5 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github')
+const path = require('path')
 //const wait = require('./wait');
 const cp = require('child_process');
 const fs = require('fs')
@@ -17,7 +18,9 @@ async function run() {
     let branch = cp.execSync(`git branch | sed -n '/* /s///p'`)
     branch = buffer2String(branch)
     branch = branch.replace(/\n/g, '')
-
+    let version = cp.execSync('yarn version --json')
+    version = buffer2String(version)
+    console.log(version)
 
     //console.log(commit, 'commit');
     //console.log(branch, 'branch');
@@ -26,8 +29,9 @@ async function run() {
     const scope = core.getInput('scope')
     const rootDir = core.getInput('root_dir')
     const strictError = core.getInput('strict_error')
+    console.log(strictError, 'strict error')
     const result=JSON.parse(fs.readFileSync('package.json'));
-    console.log(result, typeof(result), 'result')
+    console.log(result.version, typeof(result), 'version')
 
     let tag = null;
     let increace = '';
@@ -123,11 +127,33 @@ function runCMD(cmd, email, name, rootDir){
 }
 
 function genGithubTag(workspace, scope, rootDir){
+  let version = ''
   if (workspace==='global'){
-
+    const packagePath = path.join(rootDir, 'package.json')
+    const result=JSON.parse(fs.readFileSync(packagePath)); 
+    version = result.version
   }
-  const addCMD = 'git add -u'
-  const commitCMD = `git commit -m ''`
+  else{
+    const cmd1 = `cd `
+                +rootDir
+                +` && yarn workspace `
+                +scope
+                +workspace
+                +` version --json`
+    const cmd = `cd `
+                +rootDir
+                +` && yarn workspace `
+                +workspace
+                +` version --json`
+    try{
+      version = cp.execSync(cmd1)
+    }
+    catch{
+      version = cp.execSync(cmd2)
+    }
+    //version = buffer2String(version)
+    //version = JSON.parse(version).data
+  }
 }
 
 function buffer2String(buffer, key='data'){
