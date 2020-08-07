@@ -189,7 +189,7 @@ function pushGithubTag(tagMessage, version){
               + `' && git push --follow-tags`
   */
   let result
-  const cmd4 = `git push`
+  const cmd4 = `git push --follow-tags`
   result = cp.execSync(cmd4)
   //console.log(cmd, 'push git tag')
   //cp.execSync(cmd)
