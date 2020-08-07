@@ -211,10 +211,11 @@ async function run() {
     cmd = getCMD( branchInfo.branch, 
                   commit_workspace,
                   increace,
-                  tag )
+                  tag,
+                  scope)
     console.log(cmd, 'cmd')
     if (cmd!==null) {
-      runCMD(cmd, email, name)
+      runCMD(cmd, email, name, rootDir)
       const [tagMessage, version] = genGithubTag(workspace, scope, rootDir)
       pushGithubTag(tagMessage, version)
     }
