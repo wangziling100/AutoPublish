@@ -1,7 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github')
 const context = github.context
-const wait = require('./wait');
+//const wait = require('./wait');
 const cp = require('child_process');
 //const semver = require('semver')
 
@@ -13,7 +13,7 @@ async function run() {
     const sha = context.sha;
     let commit = cp.execSync(`git log --format=%B -n 1 ${sha}`);
     commit = buffer2String(commit);
-    let branch = cp.execSync(`git branch | sed -n '/\* /s///p'`)
+    let branch = cp.execSync(`git branch | sed -n '/* /s///p'`)
     branch = buffer2String(branch)
     branch = branch.replace(/\n/g, '')
 
@@ -43,6 +43,7 @@ async function run() {
       process.exit(-1)
     }
     
+    /*
     const ms = core.getInput('milliseconds');
     core.info(`Waiting ${ms} milliseconds ...`);
 
@@ -51,8 +52,10 @@ async function run() {
     core.info((new Date()).toTimeString());
 
     core.setOutput('time', new Date().toTimeString());
+    */
   } catch (error) {
     core.setFailed(error.message);
+
   }
 }
 

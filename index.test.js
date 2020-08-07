@@ -1,7 +1,7 @@
-const wait = require('./wait');
-const process = require('process');
-const cp = require('child_process');
-const path = require('path');
+//const wait = require('./wait');
+//const process = require('process');
+//const cp = require('child_process');
+//const path = require('path');
 const { multiMatch, 
         extractVersion,
         checkCommitAnalyser,
@@ -12,6 +12,7 @@ const { multiMatch,
         getCMD,
         } = require('./index');
 
+/*
 test('throws invalid number', async () => {
   await expect(wait('foo')).rejects.toThrow('milliseconds not a number');
 });
@@ -31,7 +32,7 @@ test('test runs', () => {
   //console.log(ip, process.env)
   console.log(cp.execSync(`node ${ip}`, {env: process.env}).toString());
 });
-
+*/
 test('test multiMatch', () => {
   const commit1 = 'merge 1.2.x to master'
   const commit2 = 'merge 1.2.x to 1.x'
@@ -45,7 +46,6 @@ test('test multiMatch', () => {
   //console.log(multiMatch(re, commit1))
   //console.log(multiMatch(re, commit2))
   //console.log(multiMatch(re, commit3))
-
 })
 
 test('test extractVersion', () => {
