@@ -216,7 +216,7 @@ async function run() {
     console.log(cmd, 'cmd')
     if (cmd!==null) {
       runCMD(cmd, email, name, rootDir)
-      const [tagMessage, version] = genGithubTag(workspace, scope, rootDir)
+      const [tagMessage, version] = genGithubTag(commit_workspace, scope, rootDir)
       pushGithubTag(tagMessage, version)
     }
     else {
