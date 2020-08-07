@@ -206,18 +206,25 @@ test('test checkDecisionTable', () => {
     branchInfo5.branch,
     'fix'
   ]
+
+  const condition11 = [
+    branchInfo5.branch,
+    'init'
+  ]
   
   const increase1 = checkDecisionTable(condition6, table)
   const increase2 = checkDecisionTable(condition7, table)
   const increase3 = checkDecisionTable(condition8, table)
   const increase4 = checkDecisionTable(condition9, table)
   const increase5 = checkDecisionTable(condition10, table)
+  const increase6 = checkDecisionTable(condition11, table)
 
   const tag1 = getTagFromBranch(branchInfo1.branch)
   const tag2 = getTagFromBranch(branchInfo2.branch)
   const tag3 = getTagFromBranch(branchInfo3.branch)
   const tag4 = getTagFromBranch(branchInfo4.branch)
   const tag5 = getTagFromBranch(branchInfo5.branch)
+  const tag6 = tag5
 
   const cmd1 = getCMD(branchInfo1.branch, 
                       branchInfo1.workspace,
@@ -244,12 +251,19 @@ test('test checkDecisionTable', () => {
                       increase5,
                       tag5,
                       '')
+  const cmd6 = getCMD(branchInfo5.branch,
+                      branchInfo5.workspace,
+                      increase6,
+                      tag6,
+                      '')
+
 
   expect(cmd1).toBe('yarn publish --patch --tag next --access public --no-interactive --no-git-tag-version --no-commit-hooks')
   expect(cmd2).toBe('yarn workspace abc publish --patch --tag next --access public --no-interactive --no-git-tag-version --no-commit-hooks')
   expect(cmd3).toBe(null)
   expect(cmd4).toBe('yarn workspace abc publish --patch --tag dev --access public --no-interactive --no-git-tag-version --no-commit-hooks')
   expect(cmd5).toBe('yarn workspace abc publish --prerelease --preid alpha --tag alpha --access public --no-interactive --no-git-tag-version --no-commit-hooks')
+  expect(cmd6).toBe('yarn workspace abc publish --minor --prerelease --preid alpha --tag alpha --access public --no-interactive --no-git-tag-version --no-commit-hooks')
 })
 
 test('test decision table', () => {

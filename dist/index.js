@@ -242,12 +242,24 @@ function getCMD(branch, workspace, increace, tag, scope){
     return null
   }
 
-  if (increace==='prerelease') {
-    preid = ' --preid ' + branch
+  const tmp = increace.split(',')
+  if(tmp.length===1){
+    if (increace==='prerelease') {
+      preid = ' --preid ' + branch
+    }
   }
+  else if (tmp.length===2){
+    preid = ' --preid ' + branch
+    increace = tmp.join(' --')
+  }
+  else{
+    return null
+  }
+  
+  increace = '--'+increace
 
   if (workspace==='global'){
-    cmd = 'yarn publish --' 
+    cmd = 'yarn publish '
               + increace
               + preid
               + ' --tag '
@@ -262,7 +274,7 @@ function getCMD(branch, workspace, increace, tag, scope){
     cmd = 'yarn workspace '
             + scope
             + workspace 
-            + ' publish --'
+            + ' publish '
             + increace
             + preid
             + ' --tag '
@@ -475,8 +487,8 @@ table['value1'] = [
   'prerelease',   //30
   'minor',        //31
   'patch',        //32
-  'minor',        //33
-  'minor',        //34
+  'minor,prerelease',        //33
+  'minor,prerelease',        //34
 ]
 table['value'] = [
   // version
@@ -512,8 +524,8 @@ table['value'] = [
   'prerelease',   //30
   'minor',        //31
   'patch',        //32
-  'minor',        //33
-  'minor'         //34
+  'minor,prerelease',        //33
+  'minor,prerelease'         //34
 ]
 function checkCommitAnalyser(commit, branch){
   //console.log(commit, '---------------')
