@@ -11,7 +11,7 @@ const js = require('fs')
 async function run() {
   try { 
     const context = github.context
-    //const sha = context.sha;
+    const sha = context.sha;
     let commit = cp.execSync(`git log --format=%B -n 1 ${sha}`);
     commit = buffer2String(commit);
     let branch = cp.execSync(`git branch | sed -n '/* /s///p'`)
@@ -25,6 +25,7 @@ async function run() {
     const {email, name} = context.payload.pusher;
     const scope = core.getInput('scope')
     const rootDir = core.getInput('root_dir')
+    const strictError = core.getInput('strict_error')
     const result=JSON.parse(fs.readFileSync('package.json'));
     console.log(result, typeof(result), 'result')
 
@@ -46,13 +47,12 @@ async function run() {
     console.log(cmd, 'cmd')
     if (cmd!==null) runCMD(cmd, email, name)
     else {
-      core.setFailed('publish failed')
-      //process.exit(-1)
+      if (strictError) core.setFailed('publish failed')
+      else core.setInfo('publish failed')
     }
     
   } catch (error) {
     core.setFailed(error.message);
-
   }
 }
 

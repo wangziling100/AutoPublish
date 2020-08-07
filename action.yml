@@ -9,6 +9,10 @@ inputs:
     description: 'Root directory of your monorepo'
     required: false
     default: '.'
+  strict_error:
+    description: 'if report error when a commit with a false format is given'
+    required: false
+    default: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
