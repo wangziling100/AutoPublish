@@ -53,7 +53,8 @@ async function run() {
       runCMD(cmd, email, name, rootDir)
       const [tagMessage, version] = genGithubTag(commit_workspace, scope, rootDir)
       console.log(tagMessage, version, 'tag message and version')
-      pushGithubTag(tagMessage, version)
+      const workspaceVersion = commit_workspace+'@v'+version
+      pushGithubTag(tagMessage, version, workspaceVersion)
     }
     else {
       if (strictError==='true') core.setFailed('publish failed')
@@ -181,7 +182,7 @@ function genGithubTag(workspace, scope, rootDir){
   return [tagMessage, version]
 }
 
-function pushGithubTag(tagMessage, version){
+function pushGithubTag(tagMessage, version, workspaceVersion){
   /*
   const cmd = `git add -u && `
               + `git commit -m '`
@@ -200,7 +201,7 @@ function pushGithubTag(tagMessage, version){
   console.log(buffer2String(result), 'git status')
   const cmd2 = `git commit -m '`+tagMessage+`'`
   cp.execSync(cmd2)
-  const cmd3 = `git tag -a `+version+` -m '`+tagMessage+`'`
+  const cmd3 = `git tag -a `+workspaceVersion+` -m '`+tagMessage+`'`
   cp.execSync(cmd3)
   const cmd4 = `git push --follow-tags`
   result = cp.execSync(cmd4)
