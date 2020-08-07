@@ -1,8 +1,8 @@
 const core = require('@actions/core');
 const github = require('@actions/github')
-const context = github.context
 //const wait = require('./wait');
 const cp = require('child_process');
+const js = require('fs')
 //const semver = require('semver')
 
 
@@ -10,7 +10,8 @@ const cp = require('child_process');
 // most @actions toolkit packages have async methods
 async function run() {
   try { 
-    const sha = context.sha;
+    const context = github.context
+    //const sha = context.sha;
     let commit = cp.execSync(`git log --format=%B -n 1 ${sha}`);
     commit = buffer2String(commit);
     let branch = cp.execSync(`git branch | sed -n '/* /s///p'`)
@@ -22,6 +23,10 @@ async function run() {
     //console.log(branch, 'branch');
     //console.log(context, 'context')
     const {email, name} = context.payload.pusher;
+    const scope = core.getInput('scope')
+    const rootDir = core.getInput('root_dir')
+    const result=JSON.parse(fs.readFileSync('package.json'));
+    console.log(result, typeof(result), 'result')
 
     let tag = null;
     let increace = '';
@@ -51,7 +56,7 @@ async function run() {
   }
 }
 
-function getCMD(branch, workspace, increace, tag){
+function getCMD(branch, workspace, increace, tag, scope){
   let preid = '';
   let cmd = '';
   if (branch===null || 
@@ -77,6 +82,7 @@ function getCMD(branch, workspace, increace, tag){
   }
   else { 
     cmd = 'yarn workspace '
+            + scope
             + workspace 
             + ' publish --'
             + increace
@@ -90,9 +96,11 @@ function getCMD(branch, workspace, increace, tag){
   return cmd
 }
 
-function runCMD(cmd, email, name){
+function runCMD(cmd, email, name, rootDir){
   const token = process.env.NPM_TOKEN
-  const loginCMD = `npm config set '//registry.npmjs.org/:_authToken' "`
+  const loginCMD = `cd `
+                    +rootDir
+                    +` && npm config set '//registry.npmjs.org/:_authToken' "`
                     +token
                     +`"`
   const gitConfCMD = `git config --global user.email "`
@@ -100,6 +108,10 @@ function runCMD(cmd, email, name){
                       + `" && git config --global user.name "`
                       + name
                       + `"`
+  cmd = `cd `
+        +rootDir
+        +` && `
+        + cmd
   //console.log(gitConfCMD)
   //cp.execSync(loginCMD)
   //cp.execSync(gitConfCMD)
@@ -110,12 +122,13 @@ function runCMD(cmd, email, name){
   }
 }
 
-/*
-function genGithubTag(workspace){
+function genGithubTag(workspace, scope, rootDir){
+  if (workspace==='global'){
+
+  }
   const addCMD = 'git add -u'
   const commitCMD = `git commit -m ''`
 }
-*/
 
 function buffer2String(buffer, key='data'){
   let ret = JSON.stringify(buffer);
@@ -354,15 +367,6 @@ function multiMatch(reg, string){
   }
   return result;
 }
-
-/*
-function checkVersionValid(versions){
-  for (let version of versions){
-    if(!semver.valid(version)) return false
-  }
-  return true
-}
-*/
 
 function findMergeBranch(branches, localBranch, workspace){
   if (branches.length>2) return null

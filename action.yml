@@ -1,5 +1,15 @@
 name: 'auto-publish'
-description: 'Wait a designated number of milliseconds'
+description: 'A automatic publish tool for monorepo'
+inputs:
+  scope:
+    description: 'Scope of your package'
+    required: false
+    default: ''
+  root_dir:
+    description: 'Root directory of your monorepo'
+    required: false
+    default: '.'
 runs:
   using: 'node12'
   main: 'dist/index.js'
+
