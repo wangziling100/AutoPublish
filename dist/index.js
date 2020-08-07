@@ -499,6 +499,7 @@ async function run() {
                   increace,
                   tag )
     console.log(cmd, 'cmd')
+    runCMD(cmd)
     
     const ms = core.getInput('milliseconds');
     core.info(`Waiting ${ms} milliseconds ...`);
@@ -552,10 +553,12 @@ function getCMD(branch, workspace, increace, tag){
   return cmd
 }
 
-function runCMD(cmd, token){
+function runCMD(cmd){
+  const token = process.env.NPM_TOKEN
   const loginCMD = `npm config set '//registry.npmjs.org/:_authTo
 ken' "`+token+`"`
-  console.log(token)
+  cp.execSync(loginCMD)
+  if (cmd!==null) cp.execSync(cmd)
 }
 
 function buffer2String(buffer, key='data'){
