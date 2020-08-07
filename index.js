@@ -21,6 +21,7 @@ async function run() {
     console.log(commit, 'commit');
     console.log(branch, 'branch');
     console.log(context, 'context')
+    const {email, name} = context.payload.pusher;
 
     let tag = null;
     let increace = '';
@@ -40,20 +41,10 @@ async function run() {
     console.log(cmd, 'cmd')
     if (cmd!==null) runCMD(cmd)
     else {
-      console.log('publish failed')
+      core.setFailed('publish failed')
       //process.exit(-1)
     }
     
-    /*
-    const ms = core.getInput('milliseconds');
-    core.info(`Waiting ${ms} milliseconds ...`);
-
-    core.debug((new Date()).toTimeString()); // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-    await wait(parseInt(ms));
-    core.info((new Date()).toTimeString());
-
-    core.setOutput('time', new Date().toTimeString());
-    */
   } catch (error) {
     core.setFailed(error.message);
 
@@ -99,12 +90,21 @@ function getCMD(branch, workspace, increace, tag){
   return cmd
 }
 
-function runCMD(cmd){
+function runCMD(cmd, email, name){
   const token = process.env.NPM_TOKEN
-  const loginCMD = `npm config set '//registry.npmjs.org/:_authTo
-ken' "`+token+`"`
-  cp.execSync(loginCMD)
-  if (cmd!==null) cp.execSync(cmd)
+  const loginCMD = `npm config set '//registry.npmjs.org/:_authToken' "`
+                    +token
+                    +`"`
+  const gitConfCMD = `git config --global user.email "`
+                      + email
+                      + `" && git config --global user.name "`
+                      + name
+                      + `"`
+  if (cmd!==null) {
+    cp.execSync(loginCMD)
+    cp.execSync(gitConfCMD)
+    cp.execSync(cmd)
+  }
 }
 
 /*
