@@ -185,6 +185,7 @@ async function run() {
 
     console.log(commit, 'commit');
     console.log(branch, 'branch');
+    console.log(context, 'context')
 
     let tag = null;
     let increace = '';
@@ -205,7 +206,7 @@ async function run() {
     if (cmd!==null) runCMD(cmd)
     else {
       console.log('publish failed')
-      process.exit(-1)
+      //process.exit(-1)
     }
     
     /*
