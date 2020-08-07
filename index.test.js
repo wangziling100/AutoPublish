@@ -245,11 +245,11 @@ test('test checkDecisionTable', () => {
                       tag5,
                       '')
 
-  expect(cmd1).toBe('yarn publish --patch --tag next --access public --no-interactive')
-  expect(cmd2).toBe('yarn workspace abc publish --patch --tag next --access public --no-interactive')
+  expect(cmd1).toBe('yarn publish --patch --tag next --access public --no-interactive --no-git-tag-version --no-commit-hooks')
+  expect(cmd2).toBe('yarn workspace abc publish --patch --tag next --access public --no-interactive --no-git-tag-version --no-commit-hooks')
   expect(cmd3).toBe(null)
-  expect(cmd4).toBe('yarn workspace abc publish --patch --tag dev --access public --no-interactive')
-  expect(cmd5).toBe('yarn workspace abc publish --prerelease --preid alpha --tag alpha --access public --no-interactive')
+  expect(cmd4).toBe('yarn workspace abc publish --patch --tag dev --access public --no-interactive --no-git-tag-version --no-commit-hooks')
+  expect(cmd5).toBe('yarn workspace abc publish --prerelease --preid alpha --tag alpha --access public --no-interactive --no-git-tag-version --no-commit-hooks')
 })
 
 test('test decision table', () => {
