@@ -20,7 +20,7 @@ async function run() {
 
     console.log(commit, 'commit');
     console.log(branch, 'branch');
-    console.log(context, 'context')
+    //console.log(context, 'context')
     const {email, name} = context.payload.pusher;
 
     let tag = null;
@@ -39,8 +39,8 @@ async function run() {
                   increace,
                   tag )
     console.log(cmd, 'cmd')
-    runCMD(cmd)
-    if (cmd!==null) runCMD(cmd)
+    runCMD(cmd, email, name)
+    if (cmd!==null) runCMD(cmd, email, name)
     else {
       core.setFailed('publish failed')
       //process.exit(-1)
