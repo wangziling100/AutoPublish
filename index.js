@@ -158,6 +158,7 @@ function genGithubTag(workspace, scope, rootDir){
     }
     console.log(version, 'version0')
     version = buffer2String(version)
+    version = version.split('\n')[1]
     console.log(version, 'version1')
     //version = JSON.parse(version).data
     //console.log(version, 'version2')
@@ -172,7 +173,7 @@ function genGithubTag(workspace, scope, rootDir){
               + workspace
               + 'v'
               + version
-  console(tagMessage, 'tag')
+  console.log(tagMessage, 'tag')
   return [tagMessage, version]
 }
 
