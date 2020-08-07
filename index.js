@@ -171,7 +171,7 @@ function genGithubTag(workspace, scope, rootDir){
   const tagMessage = 'Publish '
               + scope
               + workspace
-              + 'v'
+              + ' v'
               + version
   console.log(tagMessage, 'tag')
   return [tagMessage, version]
@@ -180,7 +180,7 @@ function genGithubTag(workspace, scope, rootDir){
 function pushGithubTag(tagMessage, version){
   const cmd = `git add -u && `
               + `git commit -m `
-              + tag
+              + tagMessage
               + ' && git tag -a '
               + version
               + ' -m '
