@@ -3,7 +3,8 @@ const github = require('@actions/github')
 const path = require('path')
 //const wait = require('./wait');
 const cp = require('child_process');
-const fs = require('fs')
+const fs = require('fs');
+const { pseudoRandomBytes } = require('crypto');
 //const semver = require('semver')
 
 
@@ -23,7 +24,8 @@ async function run() {
     //console.log(branch, 'branch');
     //console.log(context, 'context')
     const {email, name} = context.payload.pusher;
-    const scope = core.getInput('scope')
+    let scope = core.getInput('scope')
+    scope = scope+'/'
     const rootDir = core.getInput('root_dir')
     const strictError = core.getInput('strict_error')
     console.log(strictError, typeof(strictError), 'strict error')
@@ -46,10 +48,14 @@ async function run() {
                   increace,
                   tag )
     console.log(cmd, 'cmd')
-    if (cmd!==null) runCMD(cmd, email, name)
+    if (cmd!==null) {
+      runCMD(cmd, email, name)
+      const [tagMessage, version] = genGithubTag(workspace, scope, rootDir)
+      pushGithubTag(tagMessage, version)
+    }
     else {
       if (strictError==='true') core.setFailed('publish failed')
-      else console.log('publish failed')
+      else core.setInfo('publish failed')
     }
     
   } catch (error) {
@@ -84,7 +90,6 @@ function getCMD(branch, workspace, increace, tag, scope){
   else { 
     cmd = 'yarn workspace '
             + scope
-            + '/'
             + workspace 
             + ' publish --'
             + increace
@@ -136,7 +141,6 @@ function genGithubTag(workspace, scope, rootDir){
                 + rootDir
                 + ` && yarn workspace `
                 + scope
-                + '/'
                 + workspace
                 + ` version --json`
     const cmd = `cd `
@@ -157,13 +161,26 @@ function genGithubTag(workspace, scope, rootDir){
     if (version!==null) version = version[0]
   }
   if (workspace==='global') workspace=''
-  const tag = 'Publish '
+  const tagMessage = 'Publish '
               + scope
-              + '/'
               + workspace
               + 'v'
               + version
-  return tag
+  console(tagMessage, 'tag')
+  return [tagMessage, version]
+}
+
+function pushGithubTag(tagMessage, version){
+  const cmd = `git add -u && `
+              + `git commit -m `
+              + tag
+              + ' && git tag -a '
+              + version
+              + ' -m '
+              + tagMessage
+              + ' && git push --follow-tags'
+  console.log(cmd, 'push git tag')
+  cp.execSync(cmd)
 }
 
 function buffer2String(buffer, key='data'){
