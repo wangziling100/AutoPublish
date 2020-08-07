@@ -183,13 +183,7 @@ async function run() {
     let branch = cp.execSync(`git branch | sed -n '/* /s///p'`)
     branch = buffer2String(branch)
     branch = branch.replace(/\n/g, '')
-    let version = cp.execSync('yarn version --json')
-    version = buffer2String(version)
-    version = JSON.parse(version).data
-    const re = /([0-9])+.([0-9])+.([0-9])+(-(alpha|beta|rc).([0-9])+)?/;
-    version = re.exec(version)
-    if (version!==null) version = version[0]
-    console.log(version)
+    
     //console.log(commit, 'commit');
     //console.log(branch, 'branch');
     //console.log(context, 'context')
@@ -197,7 +191,7 @@ async function run() {
     const scope = core.getInput('scope')
     const rootDir = core.getInput('root_dir')
     const strictError = core.getInput('strict_error')
-    console.log(strictError, 'strict error')
+    console.log(strictError, typeof(strictError), 'strict error')
     const result=JSON.parse(fs.readFileSync('package.json'));
     console.log(result.version, typeof(result), 'version')
 
@@ -219,7 +213,7 @@ async function run() {
     console.log(cmd, 'cmd')
     if (cmd!==null) runCMD(cmd, email, name)
     else {
-      if (strictError) core.setFailed('publish failed')
+      if (strictError==='true') core.setFailed('publish failed')
       else console.log('publish failed')
     }
     
@@ -255,6 +249,7 @@ function getCMD(branch, workspace, increace, tag, scope){
   else { 
     cmd = 'yarn workspace '
             + scope
+            + '/'
             + workspace 
             + ' publish --'
             + increace
@@ -303,16 +298,17 @@ function genGithubTag(workspace, scope, rootDir){
   }
   else{
     const cmd1 = `cd `
-                +rootDir
-                +` && yarn workspace `
-                +scope
-                +workspace
-                +` version --json`
+                + rootDir
+                + ` && yarn workspace `
+                + scope
+                + '/'
+                + workspace
+                + ` version --json`
     const cmd = `cd `
-                +rootDir
-                +` && yarn workspace `
-                +workspace
-                +` version --json`
+                + rootDir
+                + ` && yarn workspace `
+                + workspace
+                + ` version --json`
     try{
       version = cp.execSync(cmd1)
     }
@@ -325,6 +321,14 @@ function genGithubTag(workspace, scope, rootDir){
     version = re.exec(version)
     if (version!==null) version = version[0]
   }
+  if (workspace==='global') workspace=''
+  const tag = 'Publish '
+              + scope
+              + '/'
+              + workspace
+              + 'v'
+              + version
+  return tag
 }
 
 function buffer2String(buffer, key='data'){
