@@ -344,13 +344,13 @@ function genGithubTag(workspace, scope, rootDir){
 
 function pushGithubTag(tagMessage, version){
   const cmd = `git add -u && `
-              + `git commit -m `
+              + `git commit -m '`
               + tagMessage
-              + ' && git tag -a '
+              + `'&& git tag -a `
               + version
-              + ' -m '
+              + ` -m '`
               + tagMessage
-              + ' && git push --follow-tags'
+              + `' && git push --follow-tags`
   console.log(cmd, 'push git tag')
   cp.execSync(cmd)
 }
