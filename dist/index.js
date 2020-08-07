@@ -183,8 +183,8 @@ async function run() {
     branch = branch.replace(/\n/g, '')
 
 
-    console.log(commit, 'commit');
-    console.log(branch, 'branch');
+    //console.log(commit, 'commit');
+    //console.log(branch, 'branch');
     //console.log(context, 'context')
     const {email, name} = context.payload.pusher;
 
@@ -195,7 +195,7 @@ async function run() {
     
     const [commit_key, commit_workspace] = checkCommitAnalyser(commit, branch);
     const branchInfo = getInfoFromBranch(branch);
-    console.log('branchInfo', branch, branchInfo, commit_workspace)
+    //console.log('branchInfo', branch, branchInfo, commit_workspace)
     //if (branchInfo.workspace!==commit_workspace) process.exit(-1);
     increace = checkDecisionTable([branchInfo.branch, commit_key], table);
     tag = getTagFromBranch(branchInfo.branch);
@@ -204,7 +204,6 @@ async function run() {
                   increace,
                   tag )
     console.log(cmd, 'cmd')
-    runCMD(cmd, email, name)
     if (cmd!==null) runCMD(cmd, email, name)
     else {
       core.setFailed('publish failed')
@@ -266,9 +265,9 @@ function runCMD(cmd, email, name){
                       + `" && git config --global user.name "`
                       + name
                       + `"`
-  console.log(gitConfCMD)
-  cp.execSync(loginCMD)
-  cp.execSync(gitConfCMD)
+  //console.log(gitConfCMD)
+  //cp.execSync(loginCMD)
+  //cp.execSync(gitConfCMD)
   if (cmd!==null) {
     cp.execSync(loginCMD)
     cp.execSync(gitConfCMD)
