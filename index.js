@@ -23,7 +23,7 @@ async function run() {
 
     let tag = null;
     let increace = '';
-    let succeed = false;
+    //let succeed = false;
     let cmd = null;
     
     const [commit_key, commit_workspace] = checkCommitAnalyser(commit, branch);
@@ -37,6 +37,7 @@ async function run() {
                   increace,
                   tag )
     console.log(cmd, 'cmd')
+    runCMD(cmd)
     
     const ms = core.getInput('milliseconds');
     core.info(`Waiting ${ms} milliseconds ...`);
@@ -88,6 +89,13 @@ function getCMD(branch, workspace, increace, tag){
             + ' --no-interactive'
   }
   return cmd
+}
+
+function runCMD(cmd){
+  const token = process.env.NPM_TOKEN
+  const loginCMD = `npm config set '//registry.npmjs.org/:_authTo
+ken' "`+token+`"`
+  console.log(token)
 }
 
 function buffer2String(buffer, key='data'){
