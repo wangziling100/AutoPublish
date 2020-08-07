@@ -324,8 +324,8 @@ function genGithubTag(workspace, scope, rootDir){
     console.log(version, 'version0')
     version = buffer2String(version)
     console.log(version, 'version1')
-    version = JSON.parse(version).data
-    console.log(version, 'version2')
+    //version = JSON.parse(version).data
+    //console.log(version, 'version2')
     const re = /([0-9])+.([0-9])+.([0-9])+(-(alpha|beta|rc).([0-9])+)?/;
     version = re.exec(version)
     console.log(version, 'version3')
