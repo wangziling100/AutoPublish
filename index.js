@@ -39,6 +39,7 @@ async function run() {
                   increace,
                   tag )
     console.log(cmd, 'cmd')
+    runCMD(cmd)
     if (cmd!==null) runCMD(cmd)
     else {
       core.setFailed('publish failed')
@@ -100,6 +101,8 @@ function runCMD(cmd, email, name){
                       + `" && git config --global user.name "`
                       + name
                       + `"`
+  cp.execSync(loginCMD)
+  cp.execSync(gitConfCMD)
   if (cmd!==null) {
     cp.execSync(loginCMD)
     cp.execSync(gitConfCMD)
