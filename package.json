@@ -1,7 +1,7 @@
 {
-  "name": "javascript-action",
+  "name": "auto-publish",
   "version": "1.0.0",
-  "description": "JavaScript Action Template",
+  "description": "Auto Publish Action",
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
