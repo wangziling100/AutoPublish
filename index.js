@@ -25,12 +25,12 @@ async function run() {
     //console.log(context, 'context')
     const {email, name} = context.payload.pusher;
     let scope = core.getInput('scope')
-    scope = scope+'/'
+    if (scope!=='') scope = scope+'/'
+    console.log(scope, typeof(scope), 'scope')
     const rootDir = core.getInput('root_dir')
+    console.log(rootDir, typeof(rootDir), 'root dir')
     const strictError = core.getInput('strict_error')
     console.log(strictError, typeof(strictError), 'strict error')
-    const result=JSON.parse(fs.readFileSync('package.json'));
-    console.log(result.version, typeof(result), 'version')
 
     let tag = null;
     let increace = '';
@@ -483,4 +483,7 @@ module.exports = {
   getInfoFromBranch: getInfoFromBranch,
   getTagFromBranch: getTagFromBranch,
   getCMD: getCMD,
+  runCMD: runCMD,
+  genGithubTag: genGithubTag,
+  pushGithubTag: pushGithubTag,
 }
