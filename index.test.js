@@ -128,17 +128,18 @@ test('test checkCommitAnalyser', ()=>{
 test('test checkDecisionTable', () => {
   const branch1 = 'master'
   const branch2 = 'next'
-  const branch3 = 'alpha'
-  const branch4 = 'beta'
-  const branch5 = 'v1.0.x'
-  const branch6 = 'v1.x'
+  //const branch3 = 'alpha'
+  //const branch4 = 'beta'
+  //const branch5 = 'v1.0.x'
+  //const branch6 = 'v1.x'
   const branch7 = 'abc@@master'
   const branch8 = 'abc@@next'
   const branch9 = 'abc@@alpha'
-  const branch10 = 'abc@@beta'
+  //const branch10 = 'abc@@beta'
   const branch11 = 'abc@@v1.0.x'
   const branch12 = 'abc@@v1.x'
 
+  /*
   const commit1 = 'feat'
   const commit2 = 'fix'
   const commit3 = 'breaking change'
@@ -147,6 +148,7 @@ test('test checkDecisionTable', () => {
   const commit6 = 'merge next'
   const commit7 = 'merge alpha'
   const commit8 = 'merge beta'
+  */
   const branchInfo1 = getInfoFromBranch(branch2)
   const branchInfo2 = getInfoFromBranch(branch8)
   const branchInfo3 = getInfoFromBranch(branch11)

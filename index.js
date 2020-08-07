@@ -3,7 +3,7 @@ const github = require('@actions/github')
 const context = github.context
 const wait = require('./wait');
 const cp = require('child_process');
-const semver = require('semver')
+//const semver = require('semver')
 
 
 
@@ -37,7 +37,11 @@ async function run() {
                   increace,
                   tag )
     console.log(cmd, 'cmd')
-    runCMD(cmd)
+    if (cmd!==null) runCMD(cmd)
+    else {
+      console.log('publish failed')
+      process.exit(-1)
+    }
     
     const ms = core.getInput('milliseconds');
     core.info(`Waiting ${ms} milliseconds ...`);
@@ -98,6 +102,13 @@ ken' "`+token+`"`
   cp.execSync(loginCMD)
   if (cmd!==null) cp.execSync(cmd)
 }
+
+/*
+function genGithubTag(workspace){
+  const addCMD = 'git add -u'
+  const commitCMD = `git commit -m ''`
+}
+*/
 
 function buffer2String(buffer, key='data'){
   let ret = JSON.stringify(buffer);
@@ -337,12 +348,14 @@ function multiMatch(reg, string){
   return result;
 }
 
+/*
 function checkVersionValid(versions){
   for (let version of versions){
     if(!semver.valid(version)) return false
   }
   return true
 }
+*/
 
 function findMergeBranch(branches, localBranch, workspace){
   if (branches.length>2) return null
