@@ -20,6 +20,7 @@ async function run() {
 
     console.log(commit, 'commit');
     console.log(branch, 'branch');
+    console.log(context, 'context')
 
     let tag = null;
     let increace = '';
