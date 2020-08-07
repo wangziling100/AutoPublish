@@ -220,7 +220,7 @@ async function run() {
     }
     else {
       if (strictError==='true') core.setFailed('publish failed')
-      else core.setInfo('publish failed')
+      else console.log('publish failed')
     }
     
   } catch (error) {
