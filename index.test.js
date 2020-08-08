@@ -1,7 +1,3 @@
-//const wait = require('./wait');
-//const process = require('process');
-//const cp = require('child_process');
-//const path = require('path');
 const { multiMatch, 
         extractVersion,
         checkCommitAnalyser,
@@ -12,42 +8,17 @@ const { multiMatch,
         getCMD,
         } = require('./index');
 
-/*
-test('throws invalid number', async () => {
-  await expect(wait('foo')).rejects.toThrow('milliseconds not a number');
-});
-
-test('wait 500 ms', async () => {
-  const start = new Date();
-  await wait(500);
-  const end = new Date();
-  var delta = Math.abs(end - start);
-  expect(delta).toBeGreaterThan(450);
-});
-
-// shows how the runner will run a javascript action with env / stdout protocol
-test('test runs', () => {
-  process.env['INPUT_MILLISECONDS'] = 500;
-  const ip = path.join(__dirname, 'index.js');
-  //console.log(ip, process.env)
-  console.log(cp.execSync(`node ${ip}`, {env: process.env}).toString());
-});
-*/
 test('test multiMatch', () => {
   const commit1 = 'merge 1.2.x to master'
   const commit2 = 'merge 1.2.x to 1.x'
   const commit3 = 'merge v1.2.x to v1.x'
   const commit4 = 'Merge pull request #2 from wangziling100/5.3.x '
   const re = /([0-9])+(.(([0-9])+|x))?.x/
-  //console.log(typeof(multiMatch))
   multiMatch(re, commit1)
   expect(multiMatch(re, commit1)).toEqual(['1.2.x'])
   expect(multiMatch(re, commit2)).toEqual(['1.2.x', '1.x'])
   expect(multiMatch(re, commit3)).toEqual(['1.2.x', '1.x'])
   expect(multiMatch(re, commit4)).toEqual(['5.3.x'])
-  //console.log(multiMatch(re, commit1))
-  //console.log(multiMatch(re, commit2))
-  //console.log(multiMatch(re, commit3))
 })
 
 test('test extractVersion', () => {
@@ -164,7 +135,6 @@ test('test checkDecisionTable', () => {
   const branchInfo3 = getInfoFromBranch(branch11)
   const branchInfo4 = getInfoFromBranch(branch12)
   const branchInfo5 = getInfoFromBranch(branch9)
-  //console.log(getInfoFromBranch(branch1).branch, 'branch info');
   const condition1 = [
     getInfoFromBranch(branch1).branch, 'feat'
   ]
@@ -189,7 +159,6 @@ test('test checkDecisionTable', () => {
   .toBe(null)
   expect(checkDecisionTable(condition4, table))
   .toBe('minor')
-  //console.log(condition5)
   expect(checkDecisionTable(condition5, table))
   .toBe(null)
 

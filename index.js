@@ -1,15 +1,10 @@
 const core = require('@actions/core');
 const github = require('@actions/github')
 const path = require('path')
-//const wait = require('./wait');
 const cp = require('child_process');
 const fs = require('fs');
-//const { pseudoRandomBytes } = require('crypto');
 //const semver = require('semver')
 
-
-
-// most @actions toolkit packages have async methods
 async function run() {
   try { 
     const context = github.context
@@ -17,23 +12,15 @@ async function run() {
     let commit = cp.execSync(`git log --format=%B -n 1 ${sha}`);
     commit = buffer2String(commit);
     commit = commit.split('\n')[0]
-    console.log(commit, 'commit')
     let branch = cp.execSync(`git branch | sed -n '/* /s///p'`)
     branch = buffer2String(branch)
     branch = branch.replace(/\n/g, '')
-    console.log(branch, 'branch')
     
-    //console.log(commit, 'commit');
-    //console.log(branch, 'branch');
-    //console.log(context, 'context')
     const {email, name} = context.payload.pusher;
     let scope = core.getInput('scope')
     if (scope!=='') scope = scope+'/'
-    console.log(scope, typeof(scope), 'scope')
     const rootDir = core.getInput('root_dir')
-    console.log(rootDir, typeof(rootDir), 'root dir')
     const strictError = core.getInput('strict_error')
-    console.log(strictError, typeof(strictError), 'strict error')
 
     let tag = null;
     let increace = '';
@@ -41,13 +28,11 @@ async function run() {
     let cmd = null;
     
     const [commit_key, commit_workspace] = checkCommitAnalyser(commit, branch);
-    console.log(commit_key, commit_workspace, 'checkCommitAnalyser')
     if (commit_key===null) {
       if (strictError==='true') core.setFailed('publish failed')
       return
     }
     const branchInfo = getInfoFromBranch(branch);
-    //console.log('branchInfo', branch, branchInfo, commit_workspace)
     increace = checkDecisionTable([branchInfo.branch, commit_key], table);
     tag = getTagFromBranch(branchInfo.branch);
     const version = getLocalVersion(commit_workspace, scope, rootDir)
@@ -58,12 +43,10 @@ async function run() {
                   tag,
                   scope,
                   version)
-    console.log(cmd, 'cmd')
     if (cmd!==null) {
       runCMD(cmd, email, name, rootDir)
       // git tag
       const tagMessage = genGithubTag(commit_workspace, scope, version)
-      console.log(tagMessage, version, 'tag message and version')
       let workspaceVersion = commit_workspace+'@v'+version
       if (tag!=='latest') workspaceVersion = workspaceVersion+'@'+tag
       let shouldCommit = true
@@ -81,7 +64,6 @@ async function run() {
 }
 
 function getCMD(branch, workspace, increace, tag, scope, version){
-  console.log(scope, scope)
   if (increace==='nothing') return null
   if (increace==='change tag') {
     if (version===undefined) return null
@@ -161,9 +143,6 @@ function runCMD(cmd, email, name, rootDir){
         +rootDir
         +` && `
         + cmd
-  //console.log(gitConfCMD)
-  //cp.execSync(loginCMD)
-  //cp.execSync(gitConfCMD)
   if (cmd!==null) {
     cp.execSync(loginCMD)
     cp.execSync(gitConfCMD)
@@ -177,7 +156,6 @@ function runCMD(cmd, email, name, rootDir){
 }
 
 function getLocalVersion(workspace, scope, rootDir){
-  console.log(workspace, scope, rootDir, 'getLocalVersion')
   let version = ''
   if (workspace==='global'){
     const packagePath = path.join(rootDir, 'package.json')
@@ -202,115 +180,39 @@ function getLocalVersion(workspace, scope, rootDir){
     catch(error) {
       version = cp.execSync(cmd2)
     }
-    console.log(version, 'version0')
     version = buffer2String(version)
     version = version.split('\n')[1]
-    console.log(version, 'version1')
     const re = /([0-9])+.([0-9])+.([0-9])+(-(alpha|beta|rc).([0-9])+)?/;
     version = re.exec(version)
-    console.log(version, 'version3')
     if (version!==null) version = version[0]
   }
   return version
 }
 
 function genGithubTag(workspace, scope, version){
-  /*
-  let version = ''
-  if (workspace==='global'){
-    const packagePath = path.join(rootDir, 'package.json')
-    const result=JSON.parse(fs.readFileSync(packagePath)); 
-    version = result.version
-  }
-  else{
-    const cmd1 = `cd `
-                + rootDir
-                + ` && yarn workspace `
-                + scope
-                + workspace
-                + ` version --json`
-    const cmd = `cd `
-                + rootDir
-                + ` && yarn workspace `
-                + workspace
-                + ` version --json`
-    try{
-      version = cp.execSync(cmd1)
-    }
-    catch{
-      version = cp.execSync(cmd2)
-    }
-    console.log(version, 'version0')
-    version = buffer2String(version)
-    version = version.split('\n')[1]
-    console.log(version, 'version1')
-    //version = JSON.parse(version).data
-    //console.log(version, 'version2')
-    const re = /([0-9])+.([0-9])+.([0-9])+(-(alpha|beta|rc).([0-9])+)?/;
-    version = re.exec(version)
-    console.log(version, 'version3')
-    if (version!==null) version = version[0]
-  }
-  */
-  //const version = getLocalVersion(workspace, scope, rootDir)
   if (workspace==='global') workspace=''
   const tagMessage = 'Publish '
               + scope
               + workspace
               + ' v'
               + version
-  console.log(tagMessage, 'tag')
   return tagMessage
 }
 
-/*
-function changeTag(scope, workspace, version, tag){
-  if (workspace==='global') workspace=''
-  const cmd = `yarn tag add `
-              + scope
-              + workspace
-              + '@'
-              + version
-              + ' '
-              + tag
-  try{
-    // here is a bug from yarn in tag function
-    cp.execSync(cmd)
-  }
-  catch(error){
-    console.log(error.message)
-  }
-}
-*/
 
 function pushGithubTag(tagMessage, version, workspaceVersion, shouldCommit){
-  /*
-  const cmd = `git add -u && `
-              + `git commit -m '`
-              + tagMessage
-              + `'&& git tag -a `
-              + version
-              + ` -m '`
-              + tagMessage
-              + `' && git push --follow-tags`
-  */
-  let result
   if (shouldCommit){
     const cmd1 = `git add -u`
     cp.execSync(cmd1)
     const cmd11 = `git status`
-    result = cp.execSync(cmd11)
-    console.log(buffer2String(result), 'git status')
+    cp.execSync(cmd11)
     const cmd2 = `git commit -m '`+tagMessage+`'`
     cp.execSync(cmd2)
   }
   const cmd3 = `git tag -a `+workspaceVersion+` -m '`+tagMessage+`'`
   cp.execSync(cmd3)
   const cmd4 = `git push --follow-tags`
-  result = cp.execSync(cmd4)
-  //console.log(cmd, 'push git tag')
-  //cp.execSync(cmd)
-  console.log(buffer2String(result), 'push')
+  cp.execSync(cmd4)
 }
 
 function buffer2String(buffer, key='data'){
@@ -324,7 +226,6 @@ function checkDecisionTable(condition, table){
   const key = table.key;
   const result = table.value;
   for (let index in key){
-    //console.log(condition, key[index], 'compare in check decision table')
     const isEqual = compare(key[index], condition);
     if (isEqual) {
       return result[index];
@@ -334,7 +235,6 @@ function checkDecisionTable(condition, table){
 }
 
 function compare(a, b){
-  //console.log(a, b, 'compare')
   if (a.length!==b.length) return false;
   for (let index in a){
     if(a[index]!==b[index]) return false;
@@ -453,13 +353,11 @@ table['value'] = [
   'preminor'      //34
 ]
 function checkCommitAnalyser(commit, branch){
-  //console.log(commit, '---------------')
   let workspace = null;
   let returnCommit = null;
   const subcommits = commit.split(':');
   let head = subcommits[0]
   head = head.replace(/ /g,'');
-  //console.log(head, 'head')
   switch (head){
     case 'feat': returnCommit='feat'; break;
     case 'fix': returnCommit='fix'; break;
@@ -467,12 +365,10 @@ function checkCommitAnalyser(commit, branch){
     case 'breakingchange': 
       returnCommit='breaking change'; break;
   }
-  //console.log(returnCommit, 'returnCommit1')
   let rest = null;
   let content = null;
   if (returnCommit===null){
     const tmp = head.slice(0,5);
-    //console.log(tmp, tmp.length, tmp==='Merge', 'tmp')
     // merge type
     if (tmp==='Merge') {
       returnCommit = 'merge';
@@ -486,9 +382,7 @@ function checkCommitAnalyser(commit, branch){
     rest = subcommits[1];
     let tmp = rest.split('@@');
     if (tmp.length>1) {
-      //console.log(tmp[0], tmp[0].length, 'workspace before')
       workspace = tmp[0].replace(/ /g, '');
-      //console.log(workspace, workspace.length, 'workspace after')
       content = tmp.slice(1).join('@@');
     }
     else {
@@ -496,12 +390,10 @@ function checkCommitAnalyser(commit, branch){
       content = rest;
     }
   }
-  console.log(content, 'content')
 
   if (returnCommit==='merge'){
     let re = /( |'|"|\/)+([^ '"/])+@@/
     workspace = re.exec(content);
-    console.log(workspace, 'workspace0')
     if (workspace===null) workspace = 'global';
     else {
       workspace = workspace[0]
@@ -516,12 +408,10 @@ function checkCommitAnalyser(commit, branch){
     //if (!checkVersionValid(versions)) return [ null, workspace ];
     re = /master|next|alpha|beta/;
     versions = versions.concat(multiMatch(re, content));
-    //console.log(versions, content, 'versions')
     if (versions.length===0) return [ null, workspace ]
     let mergeBranch = findMergeBranch(versions, branch, workspace);
     if (mergeBranch===null) return [ null, workspace ]
     mergeBranch = extractVersion(mergeBranch)
-    //console.log(mergeBranch, 'merge branch')
     if (mergeBranch===null) return [ null, workspace ];
     switch (mergeBranch){
       case 'next': returnCommit='merge next'; break;
@@ -564,7 +454,6 @@ function findMergeBranch(branches, localBranch, workspace){
 }
 
 function extractVersion(version){
-  //console.log(version)
   const parts = version.split('.')
   try{
     if (parts[1]==='x') return 'N';
