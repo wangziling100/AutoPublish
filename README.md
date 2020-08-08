@@ -37,5 +37,6 @@ No parameters are required, but usually you need to set scope and NPM_TOKEN
 - root_dir: Root directory of your monorepo
 - strict_error: If it is true, it will report an error once it is not successfully published. If it is false, it will ignore the commit format error.
 # Example
-This action will not generate a release every time a module is published, but it will generate a tag for this module, like [this](https://github.com/wangziling100/AutoPublishTest/tags) 
+This action will not generate a release every time a module is published, but it will generate a tag for this module, like [this](https://github.com/wangziling100/AutoPublishTest/tags). 
+
 More examples see [here](https://github.com/wangziling100/AutoPublishTest/actions)
