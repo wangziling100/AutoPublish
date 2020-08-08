@@ -48,22 +48,9 @@ async function run() {
     }
     const branchInfo = getInfoFromBranch(branch);
     //console.log('branchInfo', branch, branchInfo, commit_workspace)
-    //if (branchInfo.workspace!==commit_workspace) process.exit(-1);
     increace = checkDecisionTable([branchInfo.branch, commit_key], table);
     tag = getTagFromBranch(branchInfo.branch);
     const version = getLocalVersion(commit_workspace, scope, rootDir)
-    /* 
-    if (increace==='nothing') return
-    if (increace==='change tag') {
-      changeTag(scope, commit_workspace, version, tag)
-      const tagMessage = genGithubTag(commit_workspace, scope, version)
-      console.log(tagMessage, version, 'tag message and version')
-      let workspaceVersion = commit_workspace+'@v'+version
-      if (tag!=='latest') workspaceVersion = workspaceVersion+'@'+tag
-      pushGithubTag(tagMessage, version, workspaceVersion)
-      return
-    }
-    */
     // generate publish cmd
     cmd = getCMD( branchInfo.branch, 
                   commit_workspace,
@@ -79,7 +66,9 @@ async function run() {
       console.log(tagMessage, version, 'tag message and version')
       let workspaceVersion = commit_workspace+'@v'+version
       if (tag!=='latest') workspaceVersion = workspaceVersion+'@'+tag
-      pushGithubTag(tagMessage, version, workspaceVersion)
+      let shouldCommit = true
+      if (increace==='change tag') shouldCommit = false
+      pushGithubTag(tagMessage, version, workspaceVersion, shouldCommit)
     }
     else {
       if (strictError==='true') core.setFailed('publish failed')
@@ -294,7 +283,7 @@ function changeTag(scope, workspace, version, tag){
 }
 */
 
-function pushGithubTag(tagMessage, version, workspaceVersion){
+function pushGithubTag(tagMessage, version, workspaceVersion, shouldCommit){
   /*
   const cmd = `git add -u && `
               + `git commit -m '`
@@ -306,13 +295,15 @@ function pushGithubTag(tagMessage, version, workspaceVersion){
               + `' && git push --follow-tags`
   */
   let result
-  const cmd1 = `git add -u`
-  cp.execSync(cmd1)
-  const cmd11 = `git status`
-  result = cp.execSync(cmd11)
-  console.log(buffer2String(result), 'git status')
-  const cmd2 = `git commit -m '`+tagMessage+`'`
-  cp.execSync(cmd2)
+  if (shouldCommit){
+    const cmd1 = `git add -u`
+    cp.execSync(cmd1)
+    const cmd11 = `git status`
+    result = cp.execSync(cmd11)
+    console.log(buffer2String(result), 'git status')
+    const cmd2 = `git commit -m '`+tagMessage+`'`
+    cp.execSync(cmd2)
+  }
   const cmd3 = `git tag -a `+workspaceVersion+` -m '`+tagMessage+`'`
   cp.execSync(cmd3)
   const cmd4 = `git push --follow-tags`
