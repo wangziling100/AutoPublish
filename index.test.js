@@ -37,12 +37,14 @@ test('test multiMatch', () => {
   const commit1 = 'merge 1.2.x to master'
   const commit2 = 'merge 1.2.x to 1.x'
   const commit3 = 'merge v1.2.x to v1.x'
+  const commit4 = 'Merge pull request #2 from wangziling100/5.3.x '
   const re = /([0-9])+(.(([0-9])+|x))?.x/
   //console.log(typeof(multiMatch))
   multiMatch(re, commit1)
   expect(multiMatch(re, commit1)).toEqual(['1.2.x'])
   expect(multiMatch(re, commit2)).toEqual(['1.2.x', '1.x'])
   expect(multiMatch(re, commit3)).toEqual(['1.2.x', '1.x'])
+  expect(multiMatch(re, commit4)).toEqual(['5.3.x'])
   //console.log(multiMatch(re, commit1))
   //console.log(multiMatch(re, commit2))
   //console.log(multiMatch(re, commit3))
@@ -53,10 +55,12 @@ test('test extractVersion', () => {
   const version2 = '1.x'
   const version3 = 'master'
   const version4 = '1.2.3'
+  const version5 = '5.3.x'
   expect(extractVersion(version1)).toBe('N.N')
   expect(extractVersion(version2)).toBe('N')
   expect(extractVersion(version3)).toBe('master')
   expect(extractVersion(version4)).toBe('1.2.3')
+  expect(extractVersion(version5)).toBe('N.N')
 }) 
 
 test('test checkCommitAnalyser', ()=>{
@@ -79,6 +83,7 @@ test('test checkCommitAnalyser', ()=>{
   const commit17 = "Merge branch abc@@next"
   const commit18 = "Merge branch abc@@alpha"
   const commit19 = "Merge branch abc@@beta"
+  //const commit20 = "Merge pull request #2 from wangziling100/5.3.x"
   expect(checkCommitAnalyser(commit1, 'master'))
   .toEqual(['init', 'global'])
   expect(checkCommitAnalyser(commit2, 'master'))
@@ -123,6 +128,7 @@ test('test checkCommitAnalyser', ()=>{
   .toEqual(['merge beta', 'abc'])
   expect(checkCommitAnalyser(commit19, 'abc@@beta'))
   .toEqual([null, 'abc'])
+  //expect(checkCommitAnalyser(commit20, ))
 })
 
 test('test checkDecisionTable', () => {
@@ -181,7 +187,7 @@ test('test checkDecisionTable', () => {
   .toBe('minor')
   //console.log(condition5)
   expect(checkDecisionTable(condition5, table))
-  .toBe('prerelease')
+  .toBe(null)
 
   const condition6 = [
     branchInfo1.branch,
@@ -211,6 +217,10 @@ test('test checkDecisionTable', () => {
     branchInfo5.branch,
     'init'
   ]
+  const condition12 = [
+    branchInfo5.branch,
+    'feat'
+  ]
   
   const increase1 = checkDecisionTable(condition6, table)
   const increase2 = checkDecisionTable(condition7, table)
@@ -218,6 +228,7 @@ test('test checkDecisionTable', () => {
   const increase4 = checkDecisionTable(condition9, table)
   const increase5 = checkDecisionTable(condition10, table)
   const increase6 = checkDecisionTable(condition11, table)
+  const increase7 = checkDecisionTable(condition12, table)
 
   const tag1 = getTagFromBranch(branchInfo1.branch)
   const tag2 = getTagFromBranch(branchInfo2.branch)
@@ -225,6 +236,7 @@ test('test checkDecisionTable', () => {
   const tag4 = getTagFromBranch(branchInfo4.branch)
   const tag5 = getTagFromBranch(branchInfo5.branch)
   const tag6 = tag5
+  const tag7 = tag5
 
   const cmd1 = getCMD(branchInfo1.branch, 
                       branchInfo1.workspace,
@@ -256,14 +268,20 @@ test('test checkDecisionTable', () => {
                       increase6,
                       tag6,
                       '')
+  const cmd7 = getCMD(branchInfo5.branch,
+                      branchInfo5.workspace,
+                      increase7,
+                      tag7,
+                      '')
 
 
-  expect(cmd1).toBe('yarn publish --patch --tag next --access public --no-interactive --no-git-tag-version --no-commit-hooks')
-  expect(cmd2).toBe('yarn workspace abc publish --patch --tag next --access public --no-interactive --no-git-tag-version --no-commit-hooks')
+  expect(cmd1).toBe(null)
+  expect(cmd2).toBe(null)
   expect(cmd3).toBe(null)
-  expect(cmd4).toBe('yarn workspace abc publish --patch --tag dev --access public --no-interactive --no-git-tag-version --no-commit-hooks')
+  expect(cmd4).toBe(null)
   expect(cmd5).toBe('yarn workspace abc publish --prerelease --preid alpha --tag alpha --access public --no-interactive --no-git-tag-version --no-commit-hooks')
-  expect(cmd6).toBe('yarn workspace abc publish --minor --prerelease --preid alpha --tag alpha --access public --no-interactive --no-git-tag-version --no-commit-hooks')
+  expect(cmd6).toBe('yarn workspace abc publish --preminor --preid alpha --tag alpha --access public --no-interactive --no-git-tag-version --no-commit-hooks')
+  expect(cmd7).toBe('yarn workspace abc publish --prerelease --preid alpha --tag alpha --access public --no-interactive --no-git-tag-version --no-commit-hooks')
 })
 
 test('test decision table', () => {

@@ -169,7 +169,7 @@ const path = __webpack_require__(622)
 //const wait = require('./wait');
 const cp = __webpack_require__(129);
 const fs = __webpack_require__(747);
-const { pseudoRandomBytes } = __webpack_require__(417);
+//const { pseudoRandomBytes } = require('crypto');
 //const semver = require('semver')
 
 
@@ -208,6 +208,18 @@ async function run() {
     //if (branchInfo.workspace!==commit_workspace) process.exit(-1);
     increace = checkDecisionTable([branchInfo.branch, commit_key], table);
     tag = getTagFromBranch(branchInfo.branch);
+    const version = getLocalVersion(commit_workspace, scope, rootDir)
+    if (increace==='nothing') return
+    if (increace==='change tag') {
+      changeTag(scope, commit_workspace, version, tag)
+      const tagMessage = genGithubTag(commit_workspace, scope, version)
+      console.log(tagMessage, version, 'tag message and version')
+      let workspaceVersion = commit_workspace+'@v'+version
+      if (tag!=='latest') workspaceVersion = workspaceVersion+'@'+tag
+      pushGithubTag(tagMessage, version, workspaceVersion)
+      return
+    }
+    // generate publish cmd
     cmd = getCMD( branchInfo.branch, 
                   commit_workspace,
                   increace,
@@ -216,7 +228,8 @@ async function run() {
     console.log(cmd, 'cmd')
     if (cmd!==null) {
       runCMD(cmd, email, name, rootDir)
-      const [tagMessage, version] = genGithubTag(commit_workspace, scope, rootDir)
+      // git tag
+      const tagMessage = genGithubTag(commit_workspace, scope, version)
       console.log(tagMessage, version, 'tag message and version')
       let workspaceVersion = commit_workspace+'@v'+version
       if (tag!=='latest') workspaceVersion = workspaceVersion+'@'+tag
@@ -233,6 +246,7 @@ async function run() {
 }
 
 function getCMD(branch, workspace, increace, tag, scope){
+  if (increace==='change tag' || increace==='nothing') return null
   let preid = '';
   let cmd = '';
   if (branch===null || 
@@ -242,18 +256,13 @@ function getCMD(branch, workspace, increace, tag, scope){
     return null
   }
 
-  const tmp = increace.split(',')
-  if(tmp.length===1){
-    if (increace==='prerelease') {
-      preid = ' --preid ' + branch
-    }
-  }
-  else if (tmp.length===2){
+  //const tmp = increace.split(',')
+  if (increace==='prerelease' 
+      || increace==='preminor' 
+      || increace==='prepatch' 
+      || increace==='premajor') {
+
     preid = ' --preid ' + branch
-    increace = tmp.join(' --')
-  }
-  else{
-    return null
   }
   
   increace = '--'+increace
@@ -314,7 +323,45 @@ function runCMD(cmd, email, name, rootDir){
   }
 }
 
-function genGithubTag(workspace, scope, rootDir){
+function getLocalVersion(workspace, scope, rootDir){
+  let version = ''
+  if (workspace==='global'){
+    const packagePath = path.join(rootDir, 'package.json')
+    const result=JSON.parse(fs.readFileSync(packagePath)); 
+    version = result.version
+  }
+  else{
+    const cmd1 = `cd `
+                + rootDir
+                + ` && yarn workspace `
+                + scope
+                + workspace
+                + ` version --json`
+    const cmd2 = `cd `
+                + rootDir
+                + ` && yarn workspace `
+                + workspace
+                + ` version --json`
+    try{
+      version = cp.execSync(cmd1)
+    }
+    catch(error) {
+      version = cp.execSync(cmd2)
+    }
+    console.log(version, 'version0')
+    version = buffer2String(version)
+    version = version.split('\n')[1]
+    console.log(version, 'version1')
+    const re = /([0-9])+.([0-9])+.([0-9])+(-(alpha|beta|rc).([0-9])+)?/;
+    version = re.exec(version)
+    console.log(version, 'version3')
+    if (version!==null) version = version[0]
+  }
+  return version
+}
+
+function genGithubTag(workspace, scope, version){
+  /*
   let version = ''
   if (workspace==='global'){
     const packagePath = path.join(rootDir, 'package.json')
@@ -350,6 +397,8 @@ function genGithubTag(workspace, scope, rootDir){
     console.log(version, 'version3')
     if (version!==null) version = version[0]
   }
+  */
+  //const version = getLocalVersion(workspace, scope, rootDir)
   if (workspace==='global') workspace=''
   const tagMessage = 'Publish '
               + scope
@@ -357,7 +406,25 @@ function genGithubTag(workspace, scope, rootDir){
               + ' v'
               + version
   console.log(tagMessage, 'tag')
-  return [tagMessage, version]
+  return tagMessage
+}
+
+function changeTag(scope, workspace, version, tag){
+  if (workspace==='global') workspace=''
+  const cmd = `yarn tag add `
+              + scope
+              + workspace
+              + '@'
+              + version
+              + ' '
+              + tag
+  try{
+    // here is a bug from yarn in tag function
+    cp.execSync(cmd)
+  }
+  catch(error){
+    console.log(error.message)
+  }
 }
 
 function pushGithubTag(tagMessage, version, workspaceVersion){
@@ -443,12 +510,12 @@ table['key'] = [
   ['N.N', 'fix'],                 //22
   ['alpha', 'feat'],              //23
   ['alpha', 'fix'],               //24
-  ['alpha', 'merge N'],           //25
-  ['alpha', 'merge N.N'],         //26
+  //['alpha', 'merge N'],         //25
+  //['alpha', 'merge N.N'],       //26
   ['beta', 'feat'],               //27
   ['beta', 'fix'],                //28
-  ['beta', 'merge N'],            //29
-  ['beta', 'merge N.N'],          //30
+  //['beta', 'merge N'],          //29
+  //['beta', 'merge N.N'],        //30
   ['N', 'init'],                  //31
   ['N.N', 'init'],                //32
   ['alpha', 'init'],              //33
@@ -459,36 +526,36 @@ table['value1'] = [
   'major',        //2
   'minor',        //3
   'patch',        //4
-  'minor',        //5
-  'patch',        //6
-  'major',        //7
-  'major',        //8
-  'major',        //9
+  'change tag',   //5
+  'change tag',   //6
+  'change tag',   //7
+  'minor',        //8
+  'minor',        //9
   'major',        //10
   'minor',        //11
   'patch',        //12
-  'minor',        //13
-  'patch',        //14
+  'change tag',   //13
+  'change tag',   //14
   'minor',        //15 
   'minor',        //16
   'minor',        //17
   'patch',        //18
-  'patch',        //19
+  'nothing',      //19
   'minor',        //20
   'minor',        //21
   'patch',        //22
   'prerelease',   //23
   'prerelease',   //24
-  'prerelease',   //25
-  'prerelease',   //26
+  //'prerelease', //25
+  //'prerelease', //26
   'prerelease',   //27
   'prerelease',   //28
-  'prerelease',   //29
-  'prerelease',   //30
+  //'prerelease', //29
+  //'prerelease', //30
   'minor',        //31
   'patch',        //32
-  'minor,prerelease',        //33
-  'minor,prerelease',        //34
+  'preminor',     //33
+  'preminor',     //34
 ]
 table['value'] = [
   // version
@@ -496,36 +563,36 @@ table['value'] = [
   'major',        //2
   'minor',        //3
   'patch',        //4
-  'minor',        //5
-  'patch',        //6
-  'major',        //7
-  'major',        //8
-  'major',        //9
+  'change tag',   //5
+  'change tag',   //6
+  'change tag',   //7
+  'minor',        //8
+  'minor',        //9
   'major',        //10
   'minor',        //11
   'patch',        //12
-  'minor',        //13
-  'patch',        //14
+  'change tag',   //13
+  'change tag',   //14
   'minor',        //15
   'minor',        //16
   'minor',        //17
   'patch',        //18
-  'patch',        //19
+  'nothing',      //19
   'minor',        //20
   'minor',        //21
-  'patch',        //22*
+  'patch',        //22
   'prerelease',   //23
   'prerelease',   //24
-  'prerelease',   //25
-  'prerelease',   //26
+  //'prerelease', //25
+  //'prerelease', //26
   'prerelease',   //27
   'prerelease',   //28
-  'prerelease',   //29
-  'prerelease',   //30
+  //'prerelease', //29
+  //'prerelease', //30
   'minor',        //31
   'patch',        //32
-  'minor,prerelease',        //33
-  'minor,prerelease'         //34
+  'preminor',     //33
+  'preminor'      //34
 ]
 function checkCommitAnalyser(commit, branch){
   //console.log(commit, '---------------')
@@ -1661,13 +1728,6 @@ exports.endpoint = endpoint;
 
 module.exports = __webpack_require__(141);
 
-
-/***/ }),
-
-/***/ 417:
-/***/ (function(module) {
-
-module.exports = require("crypto");
 
 /***/ }),
 
