@@ -1,4 +1,4 @@
-# introduction
+# Introduction
 
 This project provides an automatic publishing solution based on monorepo, presented in the form of Github Action. Action will analyze the user's Git Commit, and then publish the corresponding module according to the regulations. The specific regulations are as follows:  
 - Action acts on branches master, next, alpha, beta, N.x, N.N.x  
