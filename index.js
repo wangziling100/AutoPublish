@@ -16,6 +16,7 @@ async function run() {
     const sha = context.sha;
     let commit = cp.execSync(`git log --format=%B -n 1 ${sha}`);
     commit = buffer2String(commit);
+    console.log(commit, 'commit')
     let branch = cp.execSync(`git branch | sed -n '/* /s///p'`)
     branch = buffer2String(branch)
     branch = branch.replace(/\n/g, '')
