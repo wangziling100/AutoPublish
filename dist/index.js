@@ -215,6 +215,7 @@ async function run() {
     increace = checkDecisionTable([branchInfo.branch, commit_key], table);
     tag = getTagFromBranch(branchInfo.branch);
     const version = getLocalVersion(commit_workspace, scope, rootDir)
+    /* 
     if (increace==='nothing') return
     if (increace==='change tag') {
       changeTag(scope, commit_workspace, version, tag)
@@ -225,12 +226,14 @@ async function run() {
       pushGithubTag(tagMessage, version, workspaceVersion)
       return
     }
+    */
     // generate publish cmd
     cmd = getCMD( branchInfo.branch, 
                   commit_workspace,
                   increace,
                   tag,
-                  scope)
+                  scope,
+                  version)
     console.log(cmd, 'cmd')
     if (cmd!==null) {
       runCMD(cmd, email, name, rootDir)
@@ -251,8 +254,21 @@ async function run() {
   }
 }
 
-function getCMD(branch, workspace, increace, tag, scope){
-  if (increace==='change tag' || increace==='nothing') return null
+function getCMD(branch, workspace, increace, tag, scope, version){
+  console.log(scope, scope)
+  if (increace==='nothing') return null
+  if (increace==='change tag') {
+    if (version===undefined) return null
+    if (workspace==='global') workspace=''
+    else workspace = workspace+'@'
+    const cmd = `yarn tag add `
+                + scope
+                + workspace
+                + version
+                + ' '
+                + tag
+    return cmd
+  }
   let preid = '';
   let cmd = '';
   if (branch===null || 
@@ -325,7 +341,12 @@ function runCMD(cmd, email, name, rootDir){
   if (cmd!==null) {
     cp.execSync(loginCMD)
     cp.execSync(gitConfCMD)
-    cp.execSync(cmd)
+    try{
+      cp.execSync(cmd)
+    }
+    catch(error){
+      console.log(error.message)
+    }
   }
 }
 
@@ -415,6 +436,7 @@ function genGithubTag(workspace, scope, version){
   return tagMessage
 }
 
+/*
 function changeTag(scope, workspace, version, tag){
   if (workspace==='global') workspace=''
   const cmd = `yarn tag add `
@@ -432,6 +454,7 @@ function changeTag(scope, workspace, version, tag){
     console.log(error.message)
   }
 }
+*/
 
 function pushGithubTag(tagMessage, version, workspaceVersion){
   /*
