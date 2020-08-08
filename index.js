@@ -38,6 +38,10 @@ async function run() {
     let cmd = null;
     
     const [commit_key, commit_workspace] = checkCommitAnalyser(commit, branch);
+    if (commit_key===null) {
+      if (strictError==='true') core.setFailed('publish failed')
+      return
+    }
     const branchInfo = getInfoFromBranch(branch);
     //console.log('branchInfo', branch, branchInfo, commit_workspace)
     //if (branchInfo.workspace!==commit_workspace) process.exit(-1);
