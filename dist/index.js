@@ -670,11 +670,12 @@ function checkCommitAnalyser(commit, branch){
       content = rest;
     }
   }
-  //console.log(content, 'content')
+  console.log(content, 'content')
 
   if (returnCommit==='merge'){
-    let re = /( |'|")+([0-9]|[a-z]|[A-Z])+@@/
+    let re = /( |'|"|\/)+([^ '"/])+@@/
     workspace = re.exec(content);
+    console.log(workspace, 'workspace0')
     if (workspace===null) workspace = 'global';
     else {
       workspace = workspace[0]
@@ -682,6 +683,7 @@ function checkCommitAnalyser(commit, branch){
       workspace = workspace.replace(/@@/g, '');
       workspace = workspace.replace(/'/g, '');
       workspace = workspace.replace(/"/g, '');
+      workspace = workspace.replace(/\//g, '')
     }
     re = /([0-9])+(.(([0-9])+|x))?.x/;
     let versions = multiMatch(re, content);

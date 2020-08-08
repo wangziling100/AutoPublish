@@ -83,6 +83,7 @@ test('test checkCommitAnalyser', ()=>{
   const commit17 = "Merge branch abc@@next"
   const commit18 = "Merge branch abc@@alpha"
   const commit19 = "Merge branch abc@@beta"
+  const commit20 = "Merge pull request #11 from wangziling100/module-a@@v5.x"
   //const commit20 = "Merge pull request #2 from wangziling100/5.3.x"
   expect(checkCommitAnalyser(commit1, 'master'))
   .toEqual(['init', 'global'])
@@ -128,7 +129,10 @@ test('test checkCommitAnalyser', ()=>{
   .toEqual(['merge beta', 'abc'])
   expect(checkCommitAnalyser(commit19, 'abc@@beta'))
   .toEqual([null, 'abc'])
-  //expect(checkCommitAnalyser(commit20, ))
+  expect(checkCommitAnalyser(commit20, 'next'))
+  .toEqual(['merge N', 'module-a'])
+  expect(checkCommitAnalyser(commit20, 'abc@@next'))
+  .toEqual(['merge N', 'module-a'])
 })
 
 test('test checkDecisionTable', () => {
