@@ -186,6 +186,7 @@ async function run() {
     let branch = cp.execSync(`git branch | sed -n '/* /s///p'`)
     branch = buffer2String(branch)
     branch = branch.replace(/\n/g, '')
+    console.log(branch, 'branch')
     
     //console.log(commit, 'commit');
     //console.log(branch, 'branch');
@@ -205,6 +206,7 @@ async function run() {
     let cmd = null;
     
     const [commit_key, commit_workspace] = checkCommitAnalyser(commit, branch);
+    console.log(commit_key, commit_workspace, 'checkCommitAnalyser')
     if (commit_key===null) {
       if (strictError==='true') core.setFailed('publish failed')
       return
@@ -351,6 +353,7 @@ function runCMD(cmd, email, name, rootDir){
 }
 
 function getLocalVersion(workspace, scope, rootDir){
+  console.log(workspace, scope, rootDir, 'getLocalVersion')
   let version = ''
   if (workspace==='global'){
     const packagePath = path.join(rootDir, 'package.json')
