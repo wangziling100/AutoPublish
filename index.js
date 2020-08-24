@@ -362,6 +362,9 @@ function checkCommitAnalyser(commit, branch){
     case 'feat': returnCommit='feat'; break;
     case 'fix': returnCommit='fix'; break;
     case 'init': returnCommit='init'; break;
+    case 'publish-feat': returnCommit='feat'; break;
+    case 'publish-fix': returnCommit='fix'; break;
+    case 'publish-breakingchange': returnCommit='breaking change'; break;
     case 'breakingchange': 
       returnCommit='breaking change'; break;
   }

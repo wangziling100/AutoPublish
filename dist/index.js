@@ -527,6 +527,9 @@ function checkCommitAnalyser(commit, branch){
     case 'feat': returnCommit='feat'; break;
     case 'fix': returnCommit='fix'; break;
     case 'init': returnCommit='init'; break;
+    case 'publish-feat': returnCommit='feat'; break;
+    case 'publish-fix': returnCommit='fix'; break;
+    case 'publish-breakingchange': returnCommit='breaking change'; break;
     case 'breakingchange': 
       returnCommit='breaking change'; break;
   }
@@ -6298,7 +6301,7 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var request = __webpack_require__(753);
 var universalUserAgent = __webpack_require__(796);
 
-const VERSION = "4.5.3";
+const VERSION = "4.5.4";
 
 class GraphqlError extends Error {
   constructor(request, response) {

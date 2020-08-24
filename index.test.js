@@ -55,6 +55,9 @@ test('test checkCommitAnalyser', ()=>{
   const commit18 = "Merge branch abc@@alpha"
   const commit19 = "Merge branch abc@@beta"
   const commit20 = "Merge pull request #11 from wangziling100/module-a@@v5.x"
+  const commit21 = 'publish-feat: module-a@@ new feature'
+  const commit22 = 'publish-fix: module-b@@ fix bug'
+  const commit23 = 'publish-breaking change: module-c@@ new version'
   //const commit20 = "Merge pull request #2 from wangziling100/5.3.x"
   expect(checkCommitAnalyser(commit1, 'master'))
   .toEqual(['init', 'global'])
@@ -104,6 +107,12 @@ test('test checkCommitAnalyser', ()=>{
   .toEqual(['merge N', 'module-a'])
   expect(checkCommitAnalyser(commit20, 'abc@@next'))
   .toEqual(['merge N', 'module-a'])
+  expect(checkCommitAnalyser(commit21, 'next'))
+  .toEqual(['feat', 'module-a'])
+  expect(checkCommitAnalyser(commit22, 'next'))
+  .toEqual(['fix', 'module-b'])
+  expect(checkCommitAnalyser(commit23, 'next'))
+  .toEqual(['breaking change', 'module-c'])
 })
 
 test('test checkDecisionTable', () => {
